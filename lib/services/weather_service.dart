@@ -8,13 +8,17 @@ class WeatherService {
   WeatherService(this.dio);
 
   Future<WeatherModel> getCurrentWether({required String city}) async {
-    Response response =
-        await dio.get('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1');
-    if (response.statusCode == 200) {
+    try {
+      Response response =
+          await dio.get('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1');
       WeatherModel weatherModel = WeatherModel.fromJson(response.data);
-    } else {
-      final String massageError = response.data['error']['message'];
-      throw Exception(massageError);
+      return weatherModel;
+    } on DioException catch (e) {
+      final String errorMessage = e.response?.data['error']['message'] ??
+          "An error occurred , try later";
+      throw Exception(errorMessage);
+    } catch (e) {
+      throw Exception('An error occurred , try later');
     }
   }
 }
